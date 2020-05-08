@@ -40,6 +40,7 @@
 						<li><a href= "gasket.html">CNC'd HDPE Gasket</a></li>
 						<li><a href= "hotwire.html">Hotwire Tool</a></li>
 						<li><a href= "arduino.html">Arduino Controller</a></li>
+						<li><a href= "25d.html">Plastic Lathe Carriage</a></li>
 						<!-- <li><a href= "hvac.html">HVAC Temperature Control System</a></li>
 						<li><a href= "thaw.html">Blood Thawing Device</a></li>
 						<li><a href= "truss.html">Truss Design Project</a></li>
@@ -60,9 +61,402 @@
 							<p><u>Initial Sketch</u></p>
 							<p><u>CAD Drawings</u></p>
 							<p><u>Results </u></p>
-							<p>The spherical motion controller functions great, but could control better. In order to eliminate jitteriness and input delay. The information sent from the arduino is clean and easily managable. The issue became that the sensitivity had to be quite high in order to feel responsive to the user.</p>
+							<p>The spherical motion controller functions well, but could control better. In order to eliminate jitteriness and input delay. The information sent from the arduino is clean and easily managable. The issue became that the sensitivity had to be quite high in order to feel responsive to the user.</p>
 							<p><u>Areas of improvement / Learning moments</u></p>
 							<p>I learned the difference between direct and indirect key pressing on computers.</p>
+							<pre><code>
+// Arduino Code:
+
+const int groundpin = 16; // A2 -- Ground
+const int powerpin = 17; // A1 -- Voltage
+const int xpin = 5; // x-axis
+const int ypin = 4; // y-axis
+const int zpin = 3; // z-axis
+
+int x;
+int y;
+int z;
+void setup() {
+  Serial.begin(9600); // Must match baudrate in Python script (115200) or (9600)
+
+  pinMode(groundpin, OUTPUT);
+  pinMode(powerpin, OUTPUT);
+  digitalWrite(groundpin, LOW);
+  digitalWrite(powerpin, HIGH);
+}
+
+void loop() {
+  x=analogRead(xpin);
+  y=analogRead(ypin);
+  //Serial.println(x);
+  //Serial.println(y);
+
+
+
+// Up
+  if (395 <= y && y<409 && 416<=x && x<=447) {
+    Serial.println('A');
+  }
+  else if (365<=y && y<395 && 416<=x && x<=447)  {
+    Serial.println('B');
+  }
+  else if (335<=y && y<365 && 416<=x && x<=447) {
+    Serial.println('C');
+  }
+// Down
+  else if (442<=y && y<456 && 416<=x && x<=447) {
+    Serial.println('D');
+  }
+  else if (456<=y && y<485 && 416<=x && x<=447) {
+    Serial.println('E');
+  }
+  else if (485<=y && y<514 && 416<=x && x<=447) {
+    Serial.println('F');
+  }
+// Left
+  else if (447<x && x<=461 && 409<=y && y<442) {
+   Serial.println('G');
+  }
+  else if (461<x && x<=491 && 409<=y && y<442) {
+   Serial.println('H');
+  }
+  else if (491<x && x<=521 && 409<=y && y<442) {
+   Serial.println('I');
+  }
+// Right
+  else if (402<=x && x<416 && 409<=y && y<442) {
+   Serial.println('J');
+  }
+  else if (373<=x && x<402 && 409<=y && y<442) {
+   Serial.println('K');
+  }
+  else if (343<=x && x<373 && 409<=y && y<442) {
+   Serial.println('L');
+  }
+// Up-Left
+  else if (447<x && x<=461 && 395<=y && y<409) {
+   Serial.println('M');
+  }
+  else if (461<x && x<=491 && 365<=y && y<395) {
+   Serial.println('N');
+  }
+  else if (491<x && x<=521 && 335<=y && y<365) {
+   Serial.println('O');
+  }
+// Up-Right
+  else if (402<=x && x<416 && 395<=y && y<409) {
+   Serial.println('P');
+  }
+  else if (373<=x && x<402 && 365<=y && y<395) {
+   Serial.println('Q');
+  }
+ else if (343<=x && x<373 && 335<=y && y<365) {
+  Serial.println('R');
+  }
+// Down-Left
+ else if (447<x && x<=461 && 442<=y && y<456) {
+  Serial.println('S');
+ }
+ else if (461<x && x<=491 && 456<=y && y<485) {
+  Serial.println('T');
+ }
+ else if (491<x && x<=521 && 485<=y && y<514) {
+  Serial.println('U');
+ }
+// Down-Right
+ else if (402<=x && x<416 && 442<=y && y<456) {
+  Serial.println('V');
+ }
+ else if (373<=x && x<402 && 456<=y && y<485) {
+  Serial.println('W');
+ }
+ else if (343<=x && x<373 && 485<=y && y<514) {
+  Serial.println('X');
+ }
+ else if (y<320 && y >100) {
+  Serial.println('Y');
+  Serial.println('Y');
+  Serial.println('Y');
+  Serial.println('Y');
+ }
+ else if (y>540) {
+  Serial.println('Z');
+  Serial.println('Z');
+  Serial.println('Z');
+  Serial.println('Z');
+ }
+ delay (100);
+}
+</code></pre>
+<pre><code>
+# Python Code
+
+import time
+import ctypes
+import serial
+
+
+W = 0x11
+A = 0x1E
+S = 0x1F
+D = 0x20
+L = 0x26
+l = 0x18
+r = 0x19
+R = 0x13
+
+PUL = ctypes.POINTER(ctypes.c_ulong)
+class KeyBdInput(ctypes.Structure):
+    _fields_ = [("wVk", ctypes.c_ushort),
+                ("wScan", ctypes.c_ushort),
+                ("dwFlags", ctypes.c_ulong),
+                ("time", ctypes.c_ulong),
+                ("dwExtraInfo", PUL)]
+
+class HardwareInput(ctypes.Structure):
+    _fields_ = [("uMsg", ctypes.c_ulong),
+                ("wParamL", ctypes.c_short),
+                ("wParamH", ctypes.c_ushort)]
+
+class MouseInput(ctypes.Structure):
+    _fields_ = [("dx", ctypes.c_long),
+                ("dy", ctypes.c_long),
+                ("mouseData", ctypes.c_ulong),
+                ("dwFlags", ctypes.c_ulong),
+                ("time",ctypes.c_ulong),
+                ("dwExtraInfo", PUL)]
+
+class Input_I(ctypes.Union):
+    _fields_ = [("ki", KeyBdInput),
+                 ("mi", MouseInput),
+                 ("hi", HardwareInput)]
+
+class Input(ctypes.Structure):
+    _fields_ = [("type", ctypes.c_ulong),
+                ("ii", Input_I)]
+
+
+def PressKey(hexKeyCode):
+    extra = ctypes.c_ulong(0)
+    ii_ = Input_I()
+    ii_.ki = KeyBdInput( 0, hexKeyCode, 0x0008, 0, ctypes.pointer(extra) )
+    x = Input( ctypes.c_ulong(1), ii_ )
+    ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+
+def ReleaseKey(hexKeyCode):
+    extra = ctypes.c_ulong(0)
+    ii_ = Input_I()
+    ii_.ki = KeyBdInput( 0, hexKeyCode, 0x0008 | 0x0002, 0, ctypes.pointer(extra) )
+    x = Input( ctypes.c_ulong(1), ii_ )
+    ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
+
+def main():
+    arduino = serial.Serial('COM3', 9600, timeout=1)
+    time.sleep(3)
+    incoming = str (arduino.readline())
+    while 1:
+        ReleaseKey(W)
+        ReleaseKey(S)
+        ReleaseKey(A)
+        ReleaseKey(D)
+        ReleaseKey(l)
+        ReleaseKey(r)
+        ReleaseKey(R)
+        ReleaseKey(L)
+        arduino.reset_input_buffer()
+        incoming = str (arduino.readline())
+        while incoming[2] == 'A': # Forward
+            PressKey(W)
+            time.sleep(.05)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'B':
+            PressKey(W)
+            time.sleep(.05)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'C':
+            PressKey(W)
+            time.sleep(.05)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'D': # Backward
+            PressKey(S)
+            time.sleep(.05)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'E':
+            PressKey(S)
+            time.sleep(.05)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'F':
+            PressKey(S)
+            time.sleep(.05)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'G': # Left
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'H':
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'I':
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'J': # Right
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'K':
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'L':
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'M': # Up-Left
+            PressKey(W)
+            time.sleep(.025)
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'N':
+            PressKey(W)
+            time.sleep(.025)
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'O':
+            PressKey(W)
+            time.sleep(.025)
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'P': # Up-Right
+            PressKey(W)
+            time.sleep(.025)
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'Q':
+            PressKey(W)
+            time.sleep(.025)
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'R':
+            PressKey(W)
+            time.sleep(.025)
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'S': # Down-Left
+            PressKey(S)
+            time.sleep(.025)
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'T':
+            PressKey(S)
+            time.sleep(.025)
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'U':
+            PressKey(S)
+            time.sleep(.025)
+            PressKey(A)
+            time.sleep(.025)
+            PressKey(l)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'V': # Down-Right
+            PressKey(S)
+            time.sleep(.025)
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'W':
+            PressKey(S)
+            time.sleep(.025)
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'X':
+            PressKey(S)
+            time.sleep(.025)
+            PressKey(D)
+            time.sleep(.025)
+            PressKey(r)
+            time.sleep(.025)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'Y':
+            PressKey(L)
+            time.sleep(.05)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+        while incoming[2] == 'Z':
+            PressKey(R)
+            time.sleep(.05)
+            arduino.reset_input_buffer()
+            incoming = str (arduino.readline())
+main()
+							</code></pre>
 						</div>
 					</div>
 
